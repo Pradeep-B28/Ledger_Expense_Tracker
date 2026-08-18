@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ledger Expense Tracker</string>
+    <string name="title_activity_main">Ledger Expense Tracker</string>
+    <string name="package_name">com.ledger.expensetracker</string>
+    <string name="custom_url_scheme">com.ledger.expensetracker</string>
+</resources>

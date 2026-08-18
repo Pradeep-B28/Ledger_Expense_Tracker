@@ -1,0 +1,9 @@
+{
+  "appId": "com.ledger.expensetracker",
+  "appName": "Ledger Expense Tracker",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
