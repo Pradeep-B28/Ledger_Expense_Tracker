@@ -45,12 +45,15 @@ export default function TransactionFormModal({ isOpen, onClose }) {
     e.preventDefault();
     if (!title || !amount) return;
 
+    const parsedDate = date ? new Date(date) : new Date();
+    const safeDate = isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString();
+
     await addTransaction({
       title,
       amount: parseFloat(amount),
       type,
       category,
-      date: new Date(date).toISOString(),
+      date: safeDate,
       accountId,
       notes,
       isRecurring,

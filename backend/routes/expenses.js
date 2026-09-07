@@ -122,20 +122,21 @@ router.post('/', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { title, amount, category, type, date, notes, receiptUrl, isRecurring, recurringFrequency, accountId } = req.body;
+    const updateFields = {};
+    if (title !== undefined) updateFields.title = title;
+    if (amount !== undefined && !isNaN(Number(amount))) updateFields.amount = Number(amount);
+    if (category !== undefined) updateFields.category = category;
+    if (type !== undefined) updateFields.type = type;
+    if (date !== undefined) updateFields.date = new Date(date);
+    if (notes !== undefined) updateFields.notes = notes;
+    if (receiptUrl !== undefined) updateFields.receiptUrl = receiptUrl;
+    if (isRecurring !== undefined) updateFields.isRecurring = Boolean(isRecurring);
+    if (recurringFrequency !== undefined) updateFields.recurringFrequency = recurringFrequency;
+    if (accountId !== undefined) updateFields.accountId = accountId;
+
     const updated = await Transaction.findByIdAndUpdate(
       req.params.id,
-      {
-        title,
-        amount: Number(amount),
-        category,
-        type,
-        date: date ? new Date(date) : undefined,
-        notes,
-        receiptUrl,
-        isRecurring,
-        recurringFrequency,
-        accountId,
-      },
+      { $set: updateFields },
       { new: true }
     );
 

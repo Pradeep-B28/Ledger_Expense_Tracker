@@ -35,18 +35,27 @@ export function AppProvider({ children }) {
     localStorage.setItem('ledger_currency', currency);
   }, [currency]);
 
+  function getAuthHeaders() {
+    const token = localStorage.getItem('ledger_token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }
+
   // Fast background data sync with backend
   async function refreshData() {
     try {
       const healthRes = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(1500) }).catch(() => null);
       if (healthRes && healthRes.ok) {
         setConnected(true);
+        const headers = getAuthHeaders();
         // Sync in background without blocking UI
         Promise.all([
-          fetch(`${API_BASE}/expenses`),
-          fetch(`${API_BASE}/budgets`),
-          fetch(`${API_BASE}/goals`),
-          fetch(`${API_BASE}/accounts`),
+          fetch(`${API_BASE}/expenses`, { headers }),
+          fetch(`${API_BASE}/budgets`, { headers }),
+          fetch(`${API_BASE}/goals`, { headers }),
+          fetch(`${API_BASE}/accounts`, { headers }),
         ]).then(async ([txRes, bRes, gRes, aRes]) => {
           if (txRes && txRes.ok) {
             const txData = await txRes.json();
@@ -107,7 +116,7 @@ export function AppProvider({ children }) {
     if (connected) {
       fetch(`${API_BASE}/expenses`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(tx),
       }).catch(() => {});
     }
@@ -123,7 +132,10 @@ export function AppProvider({ children }) {
 
     // 2. Background API sync
     if (connected) {
-      fetch(`${API_BASE}/expenses/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`${API_BASE}/expenses/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }).catch(() => {});
     }
   }
 
@@ -142,7 +154,7 @@ export function AppProvider({ children }) {
     if (connected) {
       fetch(`${API_BASE}/budgets`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(budget),
       }).catch(() => {});
     }
@@ -155,7 +167,10 @@ export function AppProvider({ children }) {
     showToast('Budget deleted', 'info');
 
     if (connected) {
-      fetch(`${API_BASE}/budgets/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`${API_BASE}/budgets/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }).catch(() => {});
     }
   }
 
@@ -174,7 +189,7 @@ export function AppProvider({ children }) {
     if (connected) {
       fetch(`${API_BASE}/goals`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(goal),
       }).catch(() => {});
     }
@@ -200,7 +215,7 @@ export function AppProvider({ children }) {
     if (connected) {
       fetch(`${API_BASE}/goals/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ depositAmount }),
       }).catch(() => {});
     }
@@ -213,7 +228,10 @@ export function AppProvider({ children }) {
     showToast('Goal removed', 'info');
 
     if (connected) {
-      fetch(`${API_BASE}/goals/${id}`, { method: 'DELETE' }).catch(() => {});
+      fetch(`${API_BASE}/goals/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }).catch(() => {});
     }
   }
 
@@ -232,7 +250,7 @@ export function AppProvider({ children }) {
     if (connected) {
       fetch(`${API_BASE}/accounts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(acc),
       }).catch(() => {});
     }
