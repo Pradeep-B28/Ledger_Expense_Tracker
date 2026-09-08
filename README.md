@@ -1,116 +1,75 @@
-# 💸 Ledger — Next-Gen AI-Powered Expense & Financial Management Suite
+<div align="center">
 
-[![React 18](https://img.shields.io/badge/Frontend-React_18_|_Vite-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Backend-Node.js_|_Express-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/Database-MongoDB_|_Mongoose-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Capacitor](https://img.shields.io/badge/Mobile-Android_|_Capacitor_6-119CFF?logo=capacitor&logoColor=white)](https://capacitorjs.com/)
-[![PWA Ready](https://img.shields.io/badge/PWA-Offline_Sync_Ready-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
-[![License MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+# 💸 Ledger Fullstack — MERN Personal Finance & Analytics Platform
 
-> **Ledger** is a market-ready, enterprise-grade personal finance & expense tracking application built using the MERN stack, Vite, and Capacitor. Designed to run seamlessly as a web app, Progressive Web App (PWA), and native Android application ready for Google Play Store deployment.
+### *Production-Ready Personal Finance Dashboard powered by Node.js, Express, MongoDB & React*
 
----
-
-## 🌟 Key Highlights & Features
-
-### ⚡ 0ms Optimistic UI Engine
-- **Instant Data Mutation**: Logging expenses, savings goals, budgets, and accounts updates local state & storage in **0ms** without waiting for network latencies, while background syncing with Express/MongoDB asynchronously.
-
-### 📊 Real-Time Financial Analytics
-- **Adjacent Interactive Dashboard**: Side-by-side live updates across 3 columns (*Add Record*, *Expenses by Category Donut*, and *Recent Live Activity*) without requiring vertical page scrolling.
-- **Category Spending Progress**: Visual percentage breakdown, color dots, and progress bars.
-- **Income vs Expense & Trend Analysis**: Powered by Recharts for monthly cash flow tracking.
-
-### 🤖 Built-In AI Financial Assistant
-- **Floating AI Chatbot Widget**: Interactive assistant bubble helping users set spending limits, export CSV reports, attach receipt photos, and package native Android APKs.
-
-### 🌍 Multi-Currency & Dynamic Symbols
-- Automatically updates all input fields, balance displays, and reports based on user currency selection (**USD `$`, EUR `€`, GBP `£`, INR `₹`, JPY `¥`, CAD `CA$`, AUD `A$`**).
-
-### 🏦 Real Bank Cloud Integration & Offline Storage
-- **Cloud Bank Sync**: Link real financial institutions (*Chase, Bank of America, Wells Fargo, Citi, Revolut, Monzo, HSBC, Capital One*) with 256-bit cloud encrypted sync indicators.
-- **Offline Cash Wallets**: Add manual cash, credit, and savings accounts stored securely on device.
-
-### 🔐 Security & Customization
-- **Account Security**: Change password modal, 2FA toggle, Biometric Face ID / Fingerprint lock, and active session manager.
-- **1-Click Google & Password Auth**: Quick registration via Google Account or Username & Password.
-- **5 Appearance Themes**: Cyber Dark (Default), Crisp Light, Emerald Mint, Sunset Rose, and Midnight OLED.
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 ---
 
-## 🛠️ Technology Stack
+</div>
 
-| Layer | Technologies Used |
-| :--- | :--- |
-| **Frontend** | React 18, Vite, Lucide Icons, Recharts, CSS Glassmorphism |
-| **Backend** | Node.js, Express.js, JWT Authentication, CORS, REST APIs |
-| **Database** | MongoDB, Mongoose ORM, IndexedDB / LocalStorage fallback |
-| **Mobile Native** | Capacitor 6 Android, PWA Service Worker |
+> [!TIP]
+> **Ledger Fullstack** provides a complete end-to-end cloud financial tracking solution. It features secure API endpoints, JWT authentication, real-time analytics aggregation, and a sleek glassmorphism user interface.
 
 ---
 
-## 🚀 Quick Start Guide
+## 🌟 Key Features
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) v18+
-- [MongoDB](https://www.mongodb.com/) (Optional for cloud database, fallback to LocalStorage offline mode)
+- 🔐 **Secure JWT Authentication**: User sign-up, sign-in, session management, and encrypted password hashing.
+- 📈 **Real-Time Analytics & Reporting**: Monthly cash flow charts, category breakdown, and income vs. expense ratios.
+- 🏷️ **Custom Expense Categories**: Create and color-code custom transaction categories with custom icons.
+- ⚡ **Optimistic Client State**: Responsive UI updates with background REST API synchronization.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/YOUR_USERNAME/ledger-expense-tracker.git
-cd ledger-expense-tracker
+---
+
+## 📂 Project Architecture
+
+```
+expense-tracker-demo/
+├── backend/                           # Node.js / Express REST API Server
+│   ├── config/                        # Database Connection (MongoDB / In-Memory DB)
+│   ├── controllers/                   # Transaction & Auth Controllers
+│   ├── models/                        # Mongoose Schemas (User, Expense, Category)
+│   ├── routes/                        # API Endpoint Handlers (/api/expenses, /api/auth)
+│   └── server.js                      # Express Entry Point
+└── frontend/                          # React / Vite / Tailwind Web Dashboard
+    ├── src/
+    │   ├── components/                # Analytics Charts, Modals, Navbar, Expense Lists
+    │   ├── context/                   # Global Auth & Expense State Providers
+    │   └── services/                  # Axios REST API Client
+    └── index.html
 ```
 
-### 2. Backend Setup
+---
+
+## 🚀 Quick Start
+
+### 1. Launch Backend API Server
 ```bash
 cd backend
 npm install
 npm start
+# Server starts at http://localhost:5000
 ```
-*Backend server starts at `http://localhost:5000`*
 
-### 3. Frontend Setup
-```bash
-cd ../frontend
-npm install
-npm run dev
-```
-*Frontend client starts at `http://localhost:5173`*
-
----
-
-## 📱 Packaging for Google Play Store (Android)
-
-Ledger is pre-configured with **Capacitor 6** (`com.ledger.expensetracker`).
-
+### 2. Launch Frontend Client Dashboard
 ```bash
 cd frontend
-# 1. Build Production Web Bundle
-npm run build
-
-# 2. Add Android Platform
-npx cap add android
-
-# 3. Sync Assets & Open Android Studio
-npx cap sync android
-npx cap open android
+npm install
+npm run dev
+# Dashboard launches at http://localhost:5173
 ```
 
 ---
 
-## 🤝 Contributing
+<div align="center">
 
-Contributions, issues, and feature requests are welcome!  
-Feel free to check out the [issues page](https://github.com/YOUR_USERNAME/ledger-expense-tracker/issues).
+Crafted by **[Pradeep](https://github.com/Pradeep-B28)**
 
----
-
-## ⭐ Show Your Support
-
-If you find this project useful or inspiring, please give it a **⭐ Star** on GitHub and follow for more projects!
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+</div>
