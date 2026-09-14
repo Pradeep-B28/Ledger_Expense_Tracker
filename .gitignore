@@ -2,6 +2,11 @@
 node_modules/
 frontend/node_modules/
 backend/node_modules/
+Expense_Tracker_Android/node_modules/
+Expense_Tracker_Android/dist/
+Expense_Tracker_Android/build/
+Expense_Tracker_Android/android/app/build/
+
 
 # Production builds
 frontend/dist/
@@ -25,3 +30,5 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+*.class
+
