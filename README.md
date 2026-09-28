@@ -238,7 +238,7 @@ public class SlidingWindow {
 Ledger is a personal budgeting and expense tracking computation utility. It does NOT provide certified financial planning, investment advice, tax accounting, or legal counsel. All calculations, alerts, and summaries are derived from user-submitted numbers.
 
 **Data Fiduciary:** Ledger Technologies  
-**Data Protection & Grievance Officer:** Pradeep Basha  
+**Data Protection & Grievance Officer:** Pradeep  
 **Email:** grievance@ledger.app | privacy@ledger.app  
 **Address:** Indiranagar, Bangalore, Karnataka 560038, India  
 
@@ -247,10 +247,10 @@ Ledger is a personal budgeting and expense tracking computation utility. It does
 ## License & Copyright
 
 ```
-Copyright (c) 2026 Ledger Technologies / Pradeep Basha. All Rights Reserved.
+Copyright (c) 2026 Ledger Technologies / Pradeep. All Rights Reserved.
 
 Licensed under the MIT License. You may freely use, modify, and distribute
 this project under the terms of the MIT license. See the LICENSE file for details.
 ```
 
-Maintained by **[Pradeep Basha](https://github.com/Pradeep-B28)**.
+Maintained by **[Pradeep](https://github.com/Pradeep-B28)**.

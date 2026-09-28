@@ -81,7 +81,7 @@ export default function Footer({ onNavigate, onOpenCookieSettings }) {
             Ledger is a personal budgeting and expense tracking utility designed for informational convenience. It does not provide certified financial planning, tax advice, or investment recommendations. All computations are derived from user-submitted figures.
           </p>
           <div className="dpo-info-box margin-top-12">
-            <span className="text-xs"><strong>Grievance &amp; DPO Contact:</strong> Pradeep Basha (<a href="mailto:grievance@ledger.app" className="footer-link">grievance@ledger.app</a>)</span>
+            <span className="text-xs"><strong>Grievance &amp; DPO Contact:</strong> Pradeep (<a href="mailto:grievance@ledger.app" className="footer-link">grievance@ledger.app</a>)</span>
           </div>
         </div>
       </div>

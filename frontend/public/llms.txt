@@ -4,7 +4,7 @@
 ## Project Details
 - Product: Ledger
 - Entity: Ledger Technologies
-- Founder: Pradeep Basha
+- Founder: Pradeep
 - Registered Address: Indiranagar, Bangalore, Karnataka 560038, India
 - Copyright: (c) 2026 Ledger Technologies. All rights reserved.
 - Jurisdiction: India (DPDP Act 2023 compliant), GDPR (EU), CCPA (USA)
@@ -27,4 +27,4 @@
 - Terms of Service: /terms (Strict financial disclaimer: no investment advice)
 - Cookie Policy: /cookies (Strictly necessary tokens and functional preferences only)
 - Refund Policy: /refund (14-day full money-back guarantee)
-- Grievance Redressal Officer: Pradeep Basha (grievance@ledger.app)
+- Grievance Redressal Officer: Pradeep (grievance@ledger.app)

@@ -277,7 +277,7 @@ export default function SettingsView({ onNavigate }) {
 
           <div className="legal-info-card margin-top-16">
             <strong>Data Fiduciary &amp; Grievance Redressal Officer</strong>
-            <p className="margin-top-4">Pradeep Basha (Data Protection Officer)</p>
+            <p className="margin-top-4">Pradeep (Data Protection Officer)</p>
             <p>Ledger Technologies, Indiranagar, Bangalore, Karnataka 560038, India</p>
             <p>Email: <a href="mailto:grievance@ledger.app" className="footer-link">grievance@ledger.app</a></p>
             <p className="text-xs text-muted margin-top-4">Statutory resolution turnaround: within 7 business days.</p>

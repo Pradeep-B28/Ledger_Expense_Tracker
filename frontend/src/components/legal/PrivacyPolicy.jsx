@@ -24,7 +24,7 @@ export default function PrivacyPolicy({ onNavigate }) {
           </p>
           <div className="legal-info-card">
             <p><strong>Entity Name:</strong> Ledger Technologies</p>
-            <p><strong>Founding Representative:</strong> Pradeep Basha</p>
+            <p><strong>Founding Representative:</strong> Pradeep</p>
             <p><strong>Registered Address:</strong> Indiranagar, Bangalore, Karnataka 560038, India</p>
             <p><strong>Corporate Contact:</strong> privacy@ledger.app</p>
           </div>
@@ -123,7 +123,7 @@ export default function PrivacyPolicy({ onNavigate }) {
               <UserCheck size={20} className="icon-accent" />
               <strong>Grievance Redressal Officer & Data Protection Officer</strong>
             </div>
-            <p><strong>Name:</strong> Pradeep Basha</p>
+            <p><strong>Name:</strong> Pradeep</p>
             <p><strong>Entity:</strong> Ledger Technologies</p>
             <p><strong>Email:</strong> grievance@ledger.app (or privacy@ledger.app)</p>
             <p><strong>Office Address:</strong> Indiranagar, Bangalore, Karnataka 560038, India</p>

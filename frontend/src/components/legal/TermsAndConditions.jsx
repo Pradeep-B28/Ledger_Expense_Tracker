@@ -57,7 +57,7 @@ export default function TermsAndConditions({ onNavigate }) {
         <section className="legal-section">
           <h2>4. Intellectual Property and Copyright Notice</h2>
           <p>
-            All interface designs, branding, logos, graphic assets, database schemas, codebases, documentation, and feature architectures are the exclusive property of Ledger Technologies and its founder, Pradeep Basha, protected under Indian and international copyright, trademark, and trade secret laws.
+            All interface designs, branding, logos, graphic assets, database schemas, codebases, documentation, and feature architectures are the exclusive property of Ledger Technologies and its founder, Pradeep, protected under Indian and international copyright, trademark, and trade secret laws.
           </p>
           <div className="legal-info-card">
             <p><strong>Copyright Notice:</strong> &copy; 2026 Ledger Technologies. All rights reserved.</p>

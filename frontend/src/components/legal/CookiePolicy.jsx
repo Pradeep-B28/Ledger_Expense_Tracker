@@ -118,7 +118,7 @@ export default function CookiePolicy({ onNavigate }) {
             If you have questions about our cookie practices or need assistance managing your storage preferences, contact our Data Protection Officer:
           </p>
           <div className="legal-info-card">
-            <p><strong>Officer:</strong> Pradeep Basha (Data Protection Officer)</p>
+            <p><strong>Officer:</strong> Pradeep (Data Protection Officer)</p>
             <p><strong>Email:</strong> privacy@ledger.app</p>
             <p><strong>Entity:</strong> Ledger Technologies, Bangalore, India</p>
           </div>
