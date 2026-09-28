@@ -2,12 +2,78 @@
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#6366f1" />
-    <meta name="description" content="Ledger - Modern market-ready Expense Tracker, Budget Limit Manager, and Savings Goal Planner." />
+    <link rel="icon" type="image/svg+xml" href="/og-image.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Ledger | Personal Expense Tracker &amp; Budget Manager</title>
+    <meta name="title" content="Ledger | Personal Expense Tracker &amp; Budget Manager" />
+    <meta name="description" content="Private, offline-first personal expense tracker, category budget manager, and savings goal planner. Compliant with India's DPDP Act 2023 with zero third-party ad tracking." />
+    <link rel="canonical" href="https://ledger.local/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ledger.local/" />
+    <meta property="og:title" content="Ledger | Personal Expense Tracker &amp; Budget Manager" />
+    <meta property="og:description" content="Private, offline-first personal expense tracker, category budget manager, and savings goal planner. DPDP Act 2023 compliant." />
+    <meta property="og:image" content="/og-image.svg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://ledger.local/" />
+    <meta property="twitter:title" content="Ledger | Personal Expense Tracker &amp; Budget Manager" />
+    <meta property="twitter:description" content="Private, offline-first personal expense tracker, category budget manager, and savings goal planner. DPDP Act 2023 compliant." />
+    <meta property="twitter:image" content="/og-image.svg" />
+
     <link rel="manifest" href="/manifest.json" />
-    <title>Ledger — Expense Tracker & Budget Manager</title>
+
+    <!-- Structured Data: SoftwareApplication & Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Ledger",
+          "operatingSystem": "Web, Android, iOS",
+          "applicationCategory": "FinanceApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "Personal expense tracking, category budget limit management, and target savings goal planner with zero third-party tracking.",
+          "author": {
+            "@type": "Organization",
+            "name": "Ledger Technologies"
+          }
+        },
+        {
+          "@type": "Organization",
+          "name": "Ledger Technologies",
+          "url": "https://ledger.local/",
+          "founder": {
+            "@type": "Person",
+            "name": "Pradeep Basha"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Indiranagar",
+            "addressLocality": "Bangalore",
+            "addressRegion": "Karnataka",
+            "postalCode": "560038",
+            "addressCountry": "IN"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "privacy@ledger.app",
+            "contactType": "customer service"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

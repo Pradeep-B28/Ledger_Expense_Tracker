@@ -1,87 +1,124 @@
 import express from 'express';
 import SavingsGoal from '../models/SavingsGoal.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/goals
-router.get('/', authMiddleware, async (req, res) => {
+// GET /api/goals - list only authenticated user's goals
+router.get('/', authMiddleware, requireAuth, async (req, res) => {
   try {
-    let query = {};
-    if (req.user) query.userId = req.user.id;
-
-    const goals = await SavingsGoal.find(query).sort({ createdAt: -1 });
+    const goals = await SavingsGoal.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(goals);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to retrieve savings goals' });
   }
 });
 
-// POST /api/goals
-router.post('/', authMiddleware, async (req, res) => {
+// POST /api/goals - create savings goal for authenticated user
+router.post('/', authMiddleware, requireAuth, async (req, res) => {
   try {
     const { name, targetAmount, currentAmount, targetDate, category, color, icon } = req.body;
-    if (!name || !targetAmount) {
-      return res.status(400).json({ error: 'Goal name and targetAmount are required' });
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ error: 'Valid goal name is required' });
     }
 
+    const numTarget = Number(targetAmount);
+    if (isNaN(numTarget) || numTarget <= 0) {
+      return res.status(400).json({ error: 'Target amount must be a positive number' });
+    }
+
+    const numCurrent = Math.max(0, Number(currentAmount || 0));
+
     const goal = await SavingsGoal.create({
-      userId: req.user ? req.user.id : null,
-      name,
-      targetAmount: Number(targetAmount),
-      currentAmount: Number(currentAmount || 0),
+      userId: req.user.id,
+      name: name.trim().slice(0, 80),
+      targetAmount: numTarget,
+      currentAmount: numCurrent,
       targetDate: targetDate ? new Date(targetDate) : undefined,
-      category: category || 'General',
-      color: color || '#10b981',
-      icon: icon || 'Target',
-      isCompleted: Number(currentAmount || 0) >= Number(targetAmount),
+      category: typeof category === 'string' ? category.trim().slice(0, 50) : 'General',
+      color: typeof color === 'string' && /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#10b981',
+      icon: typeof icon === 'string' ? icon.slice(0, 30) : 'Target',
+      isCompleted: numCurrent >= numTarget,
     });
 
     res.status(201).json(goal);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: 'Failed to create savings goal' });
   }
 });
 
-// PUT /api/goals/:id - update or deposit funds
-router.put('/:id', authMiddleware, async (req, res) => {
+// PUT /api/goals/:id - update or deposit funds into goal owned by authenticated user
+router.put('/:id', authMiddleware, requireAuth, async (req, res) => {
   try {
     const { name, targetAmount, currentAmount, depositAmount, targetDate, category, color, icon } = req.body;
 
-    const goal = await SavingsGoal.findById(req.params.id);
-    if (!goal) return res.status(404).json({ error: 'Goal not found' });
+    const goal = await SavingsGoal.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!goal) return res.status(404).json({ error: 'Goal not found or unauthorized' });
 
-    if (name) goal.name = name;
-    if (targetAmount) goal.targetAmount = Number(targetAmount);
-    if (category) goal.category = category;
-    if (color) goal.color = color;
-    if (icon) goal.icon = icon;
-    if (targetDate) goal.targetDate = new Date(targetDate);
+    if (name !== undefined) {
+      if (typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ error: 'Goal name cannot be empty' });
+      }
+      goal.name = name.trim().slice(0, 80);
+    }
+
+    if (targetAmount !== undefined) {
+      const numTarget = Number(targetAmount);
+      if (isNaN(numTarget) || numTarget <= 0) {
+        return res.status(400).json({ error: 'Target amount must be positive' });
+      }
+      goal.targetAmount = numTarget;
+    }
+
+    if (category !== undefined) {
+      goal.category = typeof category === 'string' ? category.trim().slice(0, 50) : 'General';
+    }
+
+    if (color !== undefined) {
+      goal.color = typeof color === 'string' && /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#10b981';
+    }
+
+    if (icon !== undefined) {
+      goal.icon = typeof icon === 'string' ? icon.slice(0, 30) : 'Target';
+    }
+
+    if (targetDate !== undefined) {
+      goal.targetDate = targetDate ? new Date(targetDate) : undefined;
+    }
 
     if (depositAmount !== undefined) {
-      goal.currentAmount += Number(depositAmount);
+      const numDeposit = Number(depositAmount);
+      if (isNaN(numDeposit) || numDeposit < 0) {
+        return res.status(400).json({ error: 'Deposit amount must be non-negative' });
+      }
+      goal.currentAmount += numDeposit;
     } else if (currentAmount !== undefined) {
-      goal.currentAmount = Number(currentAmount);
+      const numCurrent = Number(currentAmount);
+      if (isNaN(numCurrent) || numCurrent < 0) {
+        return res.status(400).json({ error: 'Current amount must be non-negative' });
+      }
+      goal.currentAmount = numCurrent;
     }
 
-    if (goal.currentAmount >= goal.targetAmount) {
-      goal.isCompleted = true;
-    }
+    goal.isCompleted = goal.currentAmount >= goal.targetAmount;
 
     await goal.save();
     res.json(goal);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: 'Failed to update goal' });
   }
 });
 
-// DELETE /api/goals/:id
-router.delete('/:id', authMiddleware, async (req, res) => {
+// DELETE /api/goals/:id - delete goal owned by authenticated user
+router.delete('/:id', authMiddleware, requireAuth, async (req, res) => {
   try {
-    await SavingsGoal.findByIdAndDelete(req.params.id);
+    const deleted = await SavingsGoal.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    if (!deleted) {
+      return res.status(404).json({ error: 'Goal not found or unauthorized' });
+    }
     res.status(204).end();
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: 'Failed to delete goal' });
   }
 });
 

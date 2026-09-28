@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema({
   currency: { type: String, default: 'USD' },
   monthlyIncomeGoal: { type: Number, default: 5000 },
   themePreference: { type: String, enum: ['dark', 'light'], default: 'dark' },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  consentGiven: { type: Boolean, default: false },
+  consentTimestamp: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 

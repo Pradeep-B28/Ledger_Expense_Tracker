@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import Modal from '../common/Modal';
-import { Lock, Mail, User, Sparkles } from 'lucide-react';
+import { Lock, Mail, User, ShieldCheck } from 'lucide-react';
 
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, onNavigate }) {
   const { login, register } = useAuth();
   const { showToast } = useApp();
 
@@ -12,28 +12,34 @@ export default function AuthModal({ isOpen, onClose }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [consentAgreed, setConsentAgreed] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
 
+    if (isRegister && !consentAgreed) {
+      setError('You must accept the DPDP Act Privacy Policy and Terms to create an account.');
+      return;
+    }
+
     try {
       if (isRegister) {
-        await register(username, email, password);
-        showToast(`Account created for ${username}! Welcome to Ledger.`);
+        await register(username, email, password, 'USD', consentAgreed);
+        showToast(`Account created for ${username}. Welcome to Ledger.`);
       } else {
         await login(email, password);
-        showToast('Signed in successfully!');
+        showToast('Signed in successfully.');
       }
       onClose();
     } catch (err) {
-      setError(err.message || 'Authentication failed');
+      setError(err.message || 'Authentication failed. Please verify your credentials.');
     }
   }
 
-  function handleGoogleAuth() {
-    showToast('Signed in with Google Account! Welcome to Ledger.');
+  function handleGuestMode() {
+    showToast('Continuing in offline guest mode. Data stored on device.');
     onClose();
   }
 
@@ -41,9 +47,11 @@ export default function AuthModal({ isOpen, onClose }) {
     <Modal isOpen={isOpen} onClose={onClose} title={isRegister ? 'Create Your Account' : 'Sign In to Ledger'}>
       <div className="auth-container">
         {/* Toggle Segmented Tabs */}
-        <div className="segmented-control full-width margin-bottom-20">
+        <div className="segmented-control full-width margin-bottom-20" role="tablist">
           <button
             type="button"
+            role="tab"
+            aria-selected={!isRegister}
             className={`segment-btn ${!isRegister ? 'active' : ''}`}
             onClick={() => {
               setIsRegister(false);
@@ -54,6 +62,8 @@ export default function AuthModal({ isOpen, onClose }) {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={isRegister}
             className={`segment-btn ${isRegister ? 'active' : ''}`}
             onClick={() => {
               setIsRegister(true);
@@ -64,93 +74,129 @@ export default function AuthModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {error && <div className="error-alert">{error}</div>}
+        {error && (
+          <div className="error-alert margin-bottom-16" role="alert">
+            {error}
+          </div>
+        )}
 
-        {/* Official Google Account Sign In Button */}
-        <button type="button" className="google-auth-btn full-width margin-bottom-20" onClick={handleGoogleAuth}>
-          <svg className="google-svg-icon" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-          </svg>
-          <span>{isRegister ? 'Create Account with Google' : 'Sign In with Google'}</span>
-        </button>
-
-        <div className="auth-divider margin-bottom-16">
-          <span>OR WITH USERNAME & PASSWORD</span>
-        </div>
-
-        <form onSubmit={handleSubmit} className="modal-form">
+        <form onSubmit={handleSubmit} className="modal-form" noValidate>
           {isRegister && (
             <div className="form-group">
-              <label className="form-label">Username / Display Name</label>
+              <label htmlFor="auth-username" className="form-label">Username / Display Name</label>
               <div className="input-group">
-                <span className="input-prefix">
+                <span className="input-prefix" aria-hidden="true">
                   <User size={16} />
                 </span>
                 <input
+                  id="auth-username"
                   type="text"
                   className="form-input"
-                  placeholder="Choose a username..."
+                  placeholder="e.g. pradeep"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required={isRegister}
+                  autoComplete="username"
                 />
               </div>
             </div>
           )}
 
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label htmlFor="auth-email" className="form-label">Email Address</label>
             <div className="input-group">
-              <span className="input-prefix">
+              <span className="input-prefix" aria-hidden="true">
                 <Mail size={16} />
               </span>
               <input
+                id="auth-email"
                 type="email"
                 className="form-input"
-                placeholder="alex@example.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label htmlFor="auth-password" className="form-label">Password</label>
             <div className="input-group">
-              <span className="input-prefix">
+              <span className="input-prefix" aria-hidden="true">
                 <Lock size={16} />
               </span>
               <input
+                id="auth-password"
                 type="password"
                 className="form-input"
-                placeholder="••••••••"
+                placeholder="Minimum 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
               />
             </div>
           </div>
 
+          {/* Form Consent Checkbox for DPDP Act 2023 */}
+          {isRegister && (
+            <div className="consent-checkbox-group margin-top-12 margin-bottom-12">
+              <label className="checkbox-label" htmlFor="consent-checkbox">
+                <input
+                  type="checkbox"
+                  id="consent-checkbox"
+                  checked={consentAgreed}
+                  onChange={(e) => setConsentAgreed(e.target.checked)}
+                  className="consent-checkbox"
+                />
+                <span className="consent-text text-xs">
+                  I consent to the collection and processing of my personal data strictly for expense tracking under India&apos;s DPDP Act 2023, and agree to the{' '}
+                  <button
+                    type="button"
+                    className="inline-legal-link"
+                    onClick={() => {
+                      onClose();
+                      if (onNavigate) onNavigate('terms');
+                    }}
+                  >
+                    Terms
+                  </button>{' '}
+                  and{' '}
+                  <button
+                    type="button"
+                    className="inline-legal-link"
+                    onClick={() => {
+                      onClose();
+                      if (onNavigate) onNavigate('privacy');
+                    }}
+                  >
+                    Privacy Policy
+                  </button>
+                  .
+                </span>
+              </label>
+            </div>
+          )}
+
           <button type="submit" className="btn btn-primary full-width margin-top-12">
-            {isRegister ? 'Create Account' : 'Sign In'}
+            {isRegister ? 'Create My Account' : 'Sign In to Account'}
           </button>
         </form>
 
         <div className="auth-divider margin-top-16">
-          <span>GUEST MODE</span>
+          <span>GUEST ACCESS</span>
         </div>
 
         <button
           type="button"
           className="btn btn-secondary full-width flex-center gap-8 margin-top-12"
-          onClick={() => handleGoogleAuth()}
+          onClick={handleGuestMode}
         >
-          <Sparkles size={16} />
-          <span>Continue as Guest</span>
+          <ShieldCheck size={16} />
+          <span>Continue in Offline Guest Mode</span>
         </button>
       </div>
     </Modal>

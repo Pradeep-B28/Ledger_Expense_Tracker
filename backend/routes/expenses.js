@@ -1,63 +1,68 @@
 import express from 'express';
 import Transaction from '../models/Transaction.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const ALLOWED_TYPES = ['expense', 'income'];
+const MAX_AMOUNT = 100000000; // 100 Million cap
+
 // GET /api/expenses - get all transactions with filters & search
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, requireAuth, async (req, res, next) => {
   try {
     const { category, type, search, startDate, endDate, accountId, limit = 100 } = req.query;
     
-    let query = {};
-    if (req.user) {
-      query.userId = req.user.id;
-    }
+    const query = { userId: req.user.id };
 
     if (category && category !== 'All') {
-      query.category = category;
+      query.category = String(category).slice(0, 50);
     }
 
-    if (type && type !== 'All') {
+    if (type && type !== 'All' && ALLOWED_TYPES.includes(type)) {
       query.type = type;
     }
 
     if (accountId) {
-      query.accountId = accountId;
+      query.accountId = String(accountId).slice(0, 50);
     }
 
-    if (search) {
+    if (search && typeof search === 'string') {
+      const sanitizedSearch = search.trim().slice(0, 100);
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
-        { notes: { $regex: search, $options: 'i' } },
+        { title: { $regex: sanitizedSearch, $options: 'i' } },
+        { category: { $regex: sanitizedSearch, $options: 'i' } },
+        { notes: { $regex: sanitizedSearch, $options: 'i' } },
       ];
     }
 
     if (startDate || endDate) {
       query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
+      if (startDate) {
+        const start = new Date(startDate);
+        if (!isNaN(start.getTime())) query.date.$gte = start;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        if (!isNaN(end.getTime())) query.date.$lte = end;
+      }
     }
+
+    const safeLimit = Math.min(Math.max(1, Number(limit) || 100), 500);
 
     const transactions = await Transaction.find(query)
       .sort({ date: -1, createdAt: -1 })
-      .limit(Number(limit));
+      .limit(safeLimit);
 
     res.json(transactions);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // GET /api/expenses/stats - statistical breakdown for dashboard & charts
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authMiddleware, requireAuth, async (req, res, next) => {
   try {
-    let query = {};
-    if (req.user) {
-      query.userId = req.user.id;
-    }
-
+    const query = { userId: req.user.id };
     const transactions = await Transaction.find(query);
 
     let totalExpense = 0;
@@ -75,7 +80,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
     });
 
     const netSavings = totalIncome - totalExpense;
-    const savingsRate = totalIncome > 0 ? ((netSavings / totalIncome) * 100).toFixed(1) : 0;
+    const savingsRate = totalIncome > 0 ? Number(((netSavings / totalIncome) * 100).toFixed(1)) : 0;
 
     res.json({
       totalExpense,
@@ -86,97 +91,135 @@ router.get('/stats', authMiddleware, async (req, res) => {
       categoryTotals,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-// POST /api/expenses - create transaction
-router.post('/', authMiddleware, async (req, res) => {
+// POST /api/expenses - create transaction with strict validation
+router.post('/', authMiddleware, requireAuth, async (req, res, next) => {
   try {
     const { title, amount, category, type, date, notes, receiptUrl, isRecurring, recurringFrequency, accountId } = req.body;
-    if (!title || amount === undefined) {
-      return res.status(400).json({ error: 'Title and amount are required' });
+
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      return res.status(400).json({ error: 'Transaction title is required.' });
     }
 
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0 || numAmount > MAX_AMOUNT) {
+      return res.status(400).json({ error: 'Valid positive transaction amount is required.' });
+    }
+
+    const safeType = ALLOWED_TYPES.includes(type) ? type : 'expense';
+    const safeCategory = (category && typeof category === 'string') ? category.trim().slice(0, 50) : 'General';
+    const safeTitle = title.trim().slice(0, 100);
+    const safeNotes = (notes && typeof notes === 'string') ? notes.trim().slice(0, 500) : '';
+
+    // Validate receiptUrl if supplied
+    let safeReceipt = '';
+    if (receiptUrl && typeof receiptUrl === 'string') {
+      if (receiptUrl.startsWith('data:image/') || receiptUrl.startsWith('https://')) {
+        safeReceipt = receiptUrl;
+      }
+    }
+
+    const txDate = date ? new Date(date) : new Date();
+    const safeDate = isNaN(txDate.getTime()) ? new Date() : txDate;
+
     const newTx = await Transaction.create({
-      userId: req.user ? req.user.id : null,
-      title,
-      amount: Number(amount),
-      category: category || 'Other',
-      type: type || 'expense',
-      date: date ? new Date(date) : new Date(),
-      notes: notes || '',
-      receiptUrl: receiptUrl || '',
+      userId: req.user.id,
+      title: safeTitle,
+      amount: numAmount,
+      category: safeCategory,
+      type: safeType,
+      date: safeDate,
+      notes: safeNotes,
+      receiptUrl: safeReceipt,
       isRecurring: Boolean(isRecurring),
-      recurringFrequency: recurringFrequency || 'none',
-      accountId: accountId || 'main',
+      recurringFrequency: ['weekly', 'monthly', 'yearly'].includes(recurringFrequency) ? recurringFrequency : 'none',
+      accountId: accountId ? String(accountId).slice(0, 50) : 'main',
     });
 
     res.status(201).json(newTx);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    next(err);
   }
 });
 
-// PUT /api/expenses/:id - update transaction
-router.put('/:id', authMiddleware, async (req, res) => {
+// PUT /api/expenses/:id - update transaction (strictly scoped to owner)
+router.put('/:id', authMiddleware, requireAuth, async (req, res, next) => {
   try {
     const { title, amount, category, type, date, notes, receiptUrl, isRecurring, recurringFrequency, accountId } = req.body;
     const updateFields = {};
-    if (title !== undefined) updateFields.title = title;
-    if (amount !== undefined && !isNaN(Number(amount))) updateFields.amount = Number(amount);
-    if (category !== undefined) updateFields.category = category;
-    if (type !== undefined) updateFields.type = type;
-    if (date !== undefined) updateFields.date = new Date(date);
-    if (notes !== undefined) updateFields.notes = notes;
-    if (receiptUrl !== undefined) updateFields.receiptUrl = receiptUrl;
-    if (isRecurring !== undefined) updateFields.isRecurring = Boolean(isRecurring);
-    if (recurringFrequency !== undefined) updateFields.recurringFrequency = recurringFrequency;
-    if (accountId !== undefined) updateFields.accountId = accountId;
 
-    const updated = await Transaction.findByIdAndUpdate(
-      req.params.id,
+    if (title !== undefined && typeof title === 'string') {
+      updateFields.title = title.trim().slice(0, 100);
+    }
+    if (amount !== undefined) {
+      const numAmount = Number(amount);
+      if (isNaN(numAmount) || numAmount <= 0 || numAmount > MAX_AMOUNT) {
+        return res.status(400).json({ error: 'Valid positive transaction amount is required.' });
+      }
+      updateFields.amount = numAmount;
+    }
+    if (category !== undefined && typeof category === 'string') {
+      updateFields.category = category.trim().slice(0, 50);
+    }
+    if (type !== undefined && ALLOWED_TYPES.includes(type)) {
+      updateFields.type = type;
+    }
+    if (date !== undefined) {
+      const d = new Date(date);
+      if (!isNaN(d.getTime())) updateFields.date = d;
+    }
+    if (notes !== undefined && typeof notes === 'string') {
+      updateFields.notes = notes.trim().slice(0, 500);
+    }
+    if (receiptUrl !== undefined && typeof receiptUrl === 'string') {
+      if (receiptUrl.startsWith('data:image/') || receiptUrl.startsWith('https://') || receiptUrl === '') {
+        updateFields.receiptUrl = receiptUrl;
+      }
+    }
+    if (isRecurring !== undefined) {
+      updateFields.isRecurring = Boolean(isRecurring);
+    }
+    if (recurringFrequency !== undefined) {
+      updateFields.recurringFrequency = recurringFrequency;
+    }
+    if (accountId !== undefined) {
+      updateFields.accountId = String(accountId).slice(0, 50);
+    }
+
+    const updated = await Transaction.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
       { $set: updateFields },
       { new: true }
     );
 
-    if (!updated) return res.status(404).json({ error: 'Transaction not found' });
+    if (!updated) {
+      return res.status(404).json({ error: 'Transaction record not found or unauthorized access.' });
+    }
+
     res.json(updated);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    next(err);
   }
 });
 
-// DELETE /api/expenses/:id - delete transaction
-router.delete('/:id', authMiddleware, async (req, res) => {
+// DELETE /api/expenses/:id - delete transaction (strictly scoped to owner)
+router.delete('/:id', authMiddleware, requireAuth, async (req, res, next) => {
   try {
-    const deleted = await Transaction.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'Transaction not found' });
-    res.status(204).end();
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+    const deleted = await Transaction.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
 
-// POST /api/expenses/seed - seed demo data for instantly rich experience
-router.post('/seed', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user ? req.user.id : null;
-    const sampleData = [
-      { title: 'Tech Corp Salary', amount: 4800, type: 'income', category: 'Salary', date: new Date(Date.now() - 86400000 * 2), notes: 'Monthly payroll deposit' },
-      { title: 'Whole Foods Market', amount: 142.50, type: 'expense', category: 'Food', date: new Date(Date.now() - 86400000 * 1), notes: 'Weekly organic groceries' },
-      { title: 'Electric & Power Bill', amount: 85.00, type: 'expense', category: 'Bills', date: new Date(Date.now() - 86400000 * 3), notes: 'Utility bill' },
-      { title: 'Uber Ride to Airport', amount: 34.20, type: 'expense', category: 'Travel', date: new Date(Date.now() - 86400000 * 4), notes: 'Business travel' },
-      { title: 'Nike Store Apparel', amount: 110.00, type: 'expense', category: 'Shopping', date: new Date(Date.now() - 86400000 * 5), notes: 'Running shoes' },
-      { title: 'Netflix & Spotify Subs', amount: 28.99, type: 'expense', category: 'Bills', date: new Date(Date.now() - 86400000 * 6), isRecurring: true, recurringFrequency: 'monthly' },
-      { title: 'Freelance Design Client', amount: 750.00, type: 'income', category: 'Investment', date: new Date(Date.now() - 86400000 * 7), notes: 'Logo design project' },
-      { title: 'Starbucks Coffee', amount: 6.75, type: 'expense', category: 'Food', date: new Date(), notes: 'Morning espresso' },
-    ];
+    if (!deleted) {
+      return res.status(404).json({ error: 'Transaction record not found or unauthorized access.' });
+    }
 
-    const created = await Transaction.insertMany(sampleData.map((d) => ({ ...d, userId })));
-    res.json({ message: 'Seeded sample transactions successfully', count: created.length });
+    res.json({ message: 'Transaction deleted successfully.', id: req.params.id });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

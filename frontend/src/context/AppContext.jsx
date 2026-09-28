@@ -11,7 +11,7 @@ import {
 } from '../utils/offlineStorage';
 
 const AppContext = createContext();
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api');
 
 export function AppProvider({ children }) {
   const [activeTab, setActiveTab] = useState('dashboard');

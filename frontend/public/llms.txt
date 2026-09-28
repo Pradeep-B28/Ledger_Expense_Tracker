@@ -1,0 +1,30 @@
+# Ledger Expense Tracker and Budget Manager
+> Personal expense tracking, budget limits management, and savings goals application. Built with offline-first local storage and optional cloud database sync.
+
+## Project Details
+- Product: Ledger
+- Entity: Ledger Technologies
+- Founder: Pradeep Basha
+- Registered Address: Indiranagar, Bangalore, Karnataka 560038, India
+- Copyright: (c) 2026 Ledger Technologies. All rights reserved.
+- Jurisdiction: India (DPDP Act 2023 compliant), GDPR (EU), CCPA (USA)
+
+## Core Capabilities
+- Offline-First Bookkeeping: Zero latency transaction recording with local storage fallback.
+- Dynamic Budgeting: Category spending limit alerts and remaining balance calculation.
+- Target Savings Goals: Goal creation, deposits, and target date completion tracking.
+- Multi-Account Wallets: Offline cash wallets, bank checking accounts, and credit card accounts.
+- Data Privacy & Minimization: Zero third-party ad pixels or tracking beacons. Complete right to access (export) and erasure (account deletion).
+- CSV Export: Instant spreadsheet download for personal tax and accounting records.
+
+## Architecture
+- Frontend: React 18, Vite 5/8, Lucide React, HTML5 LocalStorage, responsive CSS3.
+- Backend: Node.js, Express, MongoDB (Mongoose), JWT authentication with bcrypt salting.
+- Security: Helmet CSP headers, express-rate-limit protection, HTTPS enforcement, user-scoped tenant isolation.
+
+## Legal and Compliance
+- Privacy Policy: /privacy (DPDP Act 2023, Section 8/12 compliant)
+- Terms of Service: /terms (Strict financial disclaimer: no investment advice)
+- Cookie Policy: /cookies (Strictly necessary tokens and functional preferences only)
+- Refund Policy: /refund (14-day full money-back guarantee)
+- Grievance Redressal Officer: Pradeep Basha (grievance@ledger.app)

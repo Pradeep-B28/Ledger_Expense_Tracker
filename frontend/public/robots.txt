@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /refund
+Disallow: /api/
+
+Sitemap: https://ledger.local/sitemap.xml

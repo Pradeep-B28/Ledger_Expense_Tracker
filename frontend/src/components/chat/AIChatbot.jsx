@@ -46,7 +46,7 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: "Hi! 👋 I'm your Ledger AI Assistant. How can I help you manage your expenses, set budgets, or navigate the app today?",
+      text: "Welcome to Ledger Support. How can I assist you with expense tracking, budgeting, or account management today?",
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
