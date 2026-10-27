@@ -1,207 +1,124 @@
-# Ledger - Enterprise Personal Finance & Analytics Platform
+# Ledger — Cross-Platform Expense Tracker & Financial Analytics
 
-Production-ready, privacy-first personal finance platform powered by Node.js, Express, MongoDB, React, and Capacitor for Android.
-
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B%20%7C%2020%2B-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-000000?style=flat&logo=express&logoColor=white)](https://expressjs.com/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Compliance](https://img.shields.io/badge/Compliance-DPDP%20Act%202023%20%7C%20GDPR-blue?style=flat)](/privacy)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
-
-A cross-platform financial tracking ecosystem engineered for personal and small-business budgeting. Features zero-third-party tracking, strict tenant data isolation, DPDP Act 2023 compliance, offline-first local caching, and native Android packaging.
-
----
-
-## Table of Contents
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Security & Compliance Hardening](#security--compliance-hardening)
-- [System Architecture](#system-architecture)
-- [API Endpoints Reference](#api-endpoints-reference)
-- [Project Directory Structure](#project-directory-structure)
-- [Getting Started](#getting-started)
-  - [Backend Setup](#1-backend-setup)
-  - [Frontend Web Dashboard](#2-frontend-web-dashboard)
-  - [Android Mobile Build](#3-android-mobile-build)
-- [Algorithmic Budgeting](#algorithmic-budgeting)
-- [Legal & Regulatory Notice](#legal--regulatory-notice)
-- [License & Copyright](#license--copyright)
+> **Source Repository:** [github.com/Pradeep-B28/Ledger_Expense_Tracker](https://github.com/Pradeep-B28/Ledger_Expense_Tracker)  
+> **Author:** [B Pradeep](https://github.com/Pradeep-B28) · [Portfolio](https://pradeep-b28.github.io/Pradeep-B28/)
 
 ---
 
 ## Overview
 
-**Ledger** unites cloud financial accounting with cross-platform accessibility. Built on a modular MERN architecture with native Capacitor integration, it delivers real-time transaction ledgering, category spending thresholds, and predictive budget caps across desktop browsers and Android smartphones.
+**Ledger** is a cross-platform personal finance and expense analytics application engineered with the MERN stack (MongoDB, Express, React, Node.js) and wrapped with Capacitor for native Android deployment. It provides multi-wallet transaction tracking, category budget thresholds, savings targets, and interactive cashflow visualizations with strict per-tenant data scoping and privacy-first local storage caching.
+
+```mermaid
+flowchart TD
+    subgraph Clients
+        Web["React 18 Web Dashboard\n(Vite + Lucide Icons)"]
+        Mobile["Android Native App\n(Capacitor Bridge)"]
+    end
+    
+    Web -->|HTTPS REST / Scoped JWT| API["Express REST API Core\n(Rate Limiting + Helmet Headers)"]
+    Mobile -->|HTTPS REST / Scoped JWT| API
+    
+    subgraph Security & Tenant Scoping
+        Auth["JWT Authentication Middleware\n({ userId: req.user.id })"]
+        Sanitize["Input Sanitization & Capping\n(5MB max body)"]
+    end
+    
+    API --> Auth
+    Auth --> Sanitize
+    
+    Sanitize --> DB[(MongoDB Database\nUsers · Transactions · Budgets · Accounts)]
+    
+    Web -.-> LocalCache["Client LocalStorage\n(Offline-first fallback caching)"]
+```
+
+---
+
+## Technical Specifications
+
+| Component | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend Web** | React 18, Vite, Lucide Icons | Responsive dashboard with HTML5 History API routing and WCAG AA contrast |
+| **Mobile Runtime** | Capacitor Android Runtime | Pre-configured Android Studio bridge for generating installable APK packages |
+| **Backend REST API** | Node.js 18+, Express 4.x | Modular route controllers with JWT verification and helmet security headers |
+| **Database & ODM** | MongoDB, Mongoose | Indexed tenant-isolated collections enforcing `{ userId }` scoping on all queries |
+| **Authentication** | JSON Web Tokens (JWT) | Cryptographically salted passwords (`bcryptjs`), stateless bearer tokens |
+| **Privacy Compliance** | DPDP Act 2023 / GDPR alignment | One-click machine-readable JSON data export and account erasure endpoints |
 
 ---
 
 ## Key Features
 
-- **Privacy-First Architecture**: Zero third-party advertising trackers, no telemetry beacons, and complete data minimization.
-- **Strict Tenant Isolation**: All database queries, updates, and deletions enforce `{ userId: req.user.id }` scoping, preventing cross-account data leaks.
-- **Dynamic Financial Visualizations**: Interactive expense-to-income distribution donuts, monthly trend lines, and cashflow charts.
-- **Offline-First Zero Latency**: Transactions cache immediately to HTML5 LocalStorage with background cloud synchronization.
-- **Mobile Native Parity**: Pre-configured Capacitor Android bridge for compiling native `.apk` packages.
-- **Data Subject Sovereignty**: One-click machine-readable JSON data export and irreversible account erasure under the DPDP Act 2023.
+1. **Strict Tenant Data Isolation:**
+   - Every read, update, and deletion query strictly filters by `{ userId: req.user.id }`, guaranteeing complete isolation between accounts.
+2. **Interactive Financial Analytics:**
+   - Visual category distribution donuts, monthly spending trends, and budget threshold progress indicators.
+3. **Offline-First Local Storage Caching:**
+   - Fast client-side rendering with local storage fallback caching during transient network interruptions.
+4. **Data Portability & Erasure:**
+   - Full data portability endpoint (`GET /api/auth/export-data`) and complete account deletion endpoint (`DELETE /api/auth/erase-account`).
+5. **Algorithmic Budget Analysis:**
+   - Sliding window calculation utility for evaluating maximum sustained expenditure durations within budget constraints:
+     ```javascript
+     function maxExpenseWindow(expenses, budgetLimit) {
+       let start = 0, currentSum = 0, maxDays = 0;
+       for (let end = 0; end < expenses.length; end++) {
+         currentSum += expenses[end];
+         while (currentSum > budgetLimit) {
+           currentSum -= expenses[start++];
+         }
+         maxDays = Math.max(maxDays, end - start + 1);
+       }
+       return maxDays;
+     }
+     ```
 
 ---
 
-## Security & Compliance Hardening
-
-Ledger is built to withstand production audits and regulatory scrutiny:
-
-1. **Digital Personal Data Protection Act 2023 (India) & GDPR Compliance**:
-   - Explicit informed consent collected during user registration.
-   - Appointed Grievance Redressal Officer / Data Protection Officer (DPO).
-   - Dedicated Right to Data Portability (`GET /api/auth/export-data`) and Right to Erasure (`DELETE /api/auth/erase-account`).
-   - Granular Cookie Consent Banner with zero tracking cookies.
-2. **Transport & Server Hardening**:
-   - HTTP Strict Transport Security (HSTS) and automatic HTTPS redirection in production.
-   - Content Security Policy (CSP) headers applied via Helmet.
-   - Strict API rate limiting (300 requests / 15 minutes overall; 20 requests / 15 minutes for authentication).
-   - JSON body payload capping at 5MB to mitigate denial-of-service vectors.
-3. **Database & Authorization Hardening**:
-   - Passwords cryptographically salted using `bcryptjs` (salt factor 10).
-   - Every mutation checks authenticated ownership (`findOneAndUpdate({ _id, userId })` and `findOneAndDelete({ _id, userId })`).
-   - Internal stack traces and server errors masked in production responses.
-
----
-
-## System Architecture
-
-```
-                                +-----------------------------+
-                                |      CLIENT INTERFACES      |
-                                +--------------+--------------+
-                                               |
-                     +-------------------------+-------------------------+
-                     |                                                   |
-          +----------v----------+                             +----------v----------+
-          |  React Web App      |                             | Android Mobile App  |
-          |  (Vite + Lucide)    |                             | (Capacitor Runtime) |
-          +----------+----------+                             +----------+----------+
-                     |                                                   |
-                     +-------------------------+-------------------------+
-                                               |
-                                               v HTTPS REST / JSON
-                                +-----------------------------+
-                                |     EXPRESS REST API        |
-                                | - Helmet Security Headers   |
-                                | - API Rate Limiters         |
-                                | - Scoped Tenant Auth (JWT)  |
-                                | - DPDP Act Compliance Gate  |
-                                +--------------+--------------+
-                                               |
-                                               v Mongoose ODM
-                                +-----------------------------+
-                                |      MONGODB DATABASE       |
-                                | Users, Accounts, Budgets,   |
-                                | Transactions, Savings Goals |
-                                +-----------------------------+
-```
-
----
-
-## API Endpoints Reference
+## REST API Reference
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register user account with DPDP consent | No |
-| `POST` | `/api/auth/login` | Authenticate user and receive scoped JWT | No |
-| `GET` | `/api/auth/me` | Fetch active user profile and preferences | Yes (Bearer Token) |
-| `GET` | `/api/auth/export-data` | Export full personal data archive (DPDP Act) | Yes (Bearer Token) |
-| `DELETE`| `/api/auth/erase-account`| Permanently delete account and all records | Yes (Bearer Token) |
-| `GET` | `/api/expenses` | List user transactions with filters | Yes (Bearer Token) |
-| `POST` | `/api/expenses` | Record a new expense or income item | Yes (Bearer Token) |
-| `PUT` | `/api/expenses/:id` | Update transaction owned by user | Yes (Bearer Token) |
-| `DELETE`| `/api/expenses/:id` | Delete transaction owned by user | Yes (Bearer Token) |
-| `GET` | `/api/budgets` | List user category budget limits | Yes (Bearer Token) |
-| `POST` | `/api/budgets` | Create category budget limit | Yes (Bearer Token) |
-| `PUT` | `/api/budgets/:id` | Update budget limit owned by user | Yes (Bearer Token) |
-| `DELETE`| `/api/budgets/:id` | Delete budget limit owned by user | Yes (Bearer Token) |
-| `GET` | `/api/goals` | List user savings targets | Yes (Bearer Token) |
-| `POST` | `/api/goals` | Create savings goal target | Yes (Bearer Token) |
-| `PUT` | `/api/goals/:id` | Update goal or deposit funds | Yes (Bearer Token) |
-| `DELETE`| `/api/goals/:id` | Delete goal owned by user | Yes (Bearer Token) |
-| `GET` | `/api/accounts` | List user checking, card, and cash wallets | Yes (Bearer Token) |
-| `POST` | `/api/accounts` | Add manual wallet or bank account | Yes (Bearer Token) |
-| `PUT` | `/api/accounts/:id` | Update account details owned by user | Yes (Bearer Token) |
-| `DELETE`| `/api/accounts/:id` | Delete account owned by user | Yes (Bearer Token) |
-| `GET` | `/api/health` | Health check endpoint | No |
+| `POST` | `/api/auth/register` | Register new user account | Public |
+| `POST` | `/api/auth/login` | Authenticate and obtain JWT bearer token | Public |
+| `GET` | `/api/auth/me` | Retrieve current authenticated user profile | Yes (Bearer) |
+| `GET` | `/api/auth/export-data` | Download complete personal data JSON export | Yes (Bearer) |
+| `DELETE` | `/api/auth/erase-account` | Irreversibly delete user account and records | Yes (Bearer) |
+| `GET` | `/api/expenses` | List transactions with date and category filters | Yes (Bearer) |
+| `POST` | `/api/expenses` | Record a new income or expense transaction | Yes (Bearer) |
+| `PUT` | `/api/expenses/:id` | Update an existing user transaction | Yes (Bearer) |
+| `DELETE` | `/api/expenses/:id` | Remove a transaction | Yes (Bearer) |
+| `GET` | `/api/budgets` | Fetch active budget thresholds | Yes (Bearer) |
+| `POST` | `/api/budgets` | Define category budget limit | Yes (Bearer) |
+| `GET` | `/api/goals` | List personal savings targets | Yes (Bearer) |
+| `POST` | `/api/goals` | Create a savings goal target | Yes (Bearer) |
 
 ---
 
-## Project Directory Structure
-
-```text
-Ledger_Expense_Tracker/
-├── backend/                           # Node.js / Express REST API Server
-│   ├── middleware/                    # JWT auth, role validation & tenant scoping
-│   ├── models/                        # Mongoose models (User, Transaction, Budget, Goal, Account)
-│   ├── routes/                        # Express API route handlers
-│   ├── utils/                         # Helper functions & JWT formatters
-│   ├── server.js                      # Express application entry point
-│   ├── package.json                   # Backend dependencies
-│   └── .env.example                   # Environment configuration template
-├── frontend/                          # React + Vite Web Client
-│   ├── public/                        # Static assets (robots.txt, sitemap.xml, llms.txt, og-image.svg)
-│   ├── src/
-│   │   ├── components/                # Modular UI components
-│   │   │   ├── accounts/              # Wallets and bank accounts
-│   │   │   ├── analytics/             # Charts and insight panels
-│   │   │   ├── auth/                  # Authentication modal with DPDP consent
-│   │   │   ├── budgets/               # Budget cards and savings goals
-│   │   │   ├── chat/                  # AI support assistant
-│   │   │   ├── common/                # Header, Navbar, Footer, Breadcrumbs, 404
-│   │   │   ├── dashboard/             # Overview cards, pulse score, recent activity
-│   │   │   ├── legal/                 # Privacy Policy, Terms, Cookies, Refund, Consent Banner
-│   │   │   ├── settings/              # Settings & DPDP rights management
-│   │   │   └── transactions/          # Transaction table & modal
-│   │   ├── context/                   # React Context (AuthContext, AppContext, ThemeContext)
-│   │   ├── utils/                     # Offline storage, formatters, CSV export
-│   │   ├── App.jsx                    # Root component with HTML5 History API routing
-│   │   ├── index.css                  # De-vibe-coded WCAG AA responsive stylesheet
-│   │   └── main.jsx                   # React DOM mounting
-│   ├── vite.config.js                 # Vite production build configuration
-│   └── package.json                   # Frontend dependencies
-├── android/                           # Capacitor Android Studio Native Project
-└── README.md                          # Project documentation
-```
-
----
-
-## Getting Started
+## Local Development Setup
 
 ### Prerequisites
 - Node.js 18.x or 20.x
-- MongoDB (local or Atlas cluster)
+- MongoDB (local instance or MongoDB Atlas connection string)
 - npm or yarn
 
-### 1. Backend Setup
-
+### 1. Backend Server Setup
 ```bash
 cd backend
 npm install
 cp .env.example .env
+# Edit .env to set PORT and MONGO_URI
 npm run dev
 ```
 
-### 2. Frontend Web Dashboard
-
+### 2. Frontend Web Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-To create a production build with vendor chunk splitting and no source maps:
-```bash
-npm run build
-```
-
-### 3. Android Mobile Build
-
+### 3. Android Mobile Build (Capacitor)
 ```bash
 cd frontend
 npm run build
@@ -211,66 +128,16 @@ npx cap open android
 
 ---
 
-## Algorithmic Budgeting
+## Author & Contact
 
-Ledger includes algorithmic sliding window calculations for determining maximum sustained expenditure durations within budget thresholds:
-
-```java
-public class SlidingWindow {
-    public static int longest(int arr[], int budget) {
-        int start = 0, sum = 0, max = 0;
-        for (int end = 0; end < arr.length; end++) {
-            sum += arr[end];
-            while (sum > budget) {
-                sum -= arr[start++];
-            }
-            max = Math.max(max, end - start + 1);
-        }
-        return max;
-    }
-}
-```
+**B Pradeep**  
+Software Engineer · Technical Trainer  
+Email: [pradeepbashaa@gmail.com](mailto:pradeepbashaa@gmail.com)  
+GitHub: [@Pradeep-B28](https://github.com/Pradeep-B28)  
+LinkedIn: [linkedin.com/in/pradeepb-2k](https://www.linkedin.com/in/pradeepb-2k)
 
 ---
 
-## Legal & Regulatory Notice
+## License
 
-Ledger is a personal budgeting and expense tracking computation utility. It does NOT provide certified financial planning, investment advice, tax accounting, or legal counsel. All calculations, alerts, and summaries are derived from user-submitted numbers.
-
-**Data Fiduciary:** Ledger Technologies  
-**Data Protection & Grievance Officer:** Pradeep  
-**Email:** grievance@ledger.app | privacy@ledger.app  
-**Address:** Indiranagar, Bangalore, Karnataka 560038, India  
-
----
-
-## License & Copyright
-
-```
-Copyright (c) 2026 Ledger Technologies / Pradeep. All Rights Reserved.
-
-Licensed under the MIT License. You may freely use, modify, and distribute
-this project under the terms of the MIT license. See the LICENSE file for details.
-```
-
-Maintained by **[Pradeep](https://github.com/Pradeep-B28)**.
-
----
-
-## 👨‍💻 Author & Contact
-
-**Pradeep B**  
-*Java & DSA Master Trainer | Full-Stack Architect | Web Platform Engineer*
-
-- 🌐 **Softech Career & Placement Portal:** [reachsoftech.onrender.com](https://reachsoftech.onrender.com/home)
-- 🌌 **3D Interactive Developer Portfolio:** [pradeep-b28.github.io/GIT_3D_Portfolio](https://pradeep-b28.github.io/GIT_3D_Portfolio/)
-- 💻 **GitHub Profile:** [@Pradeep-B28](https://github.com/Pradeep-B28)
-- 💼 **LinkedIn:** [linkedin.com/in/pradeepb-2k](https://www.linkedin.com/in/pradeepb-2k)
-- 📧 **Email:** [pradeepbashaa@gmail.com](mailto:pradeepbashaa@gmail.com)
-
-### 🚀 Live Web Applications & Platforms
-- 🌐 **Softech Career Portal:** [reachsoftech.onrender.com](https://reachsoftech.onrender.com/home)
-- 🗺️ **Namma Route (Tamil Nadu Transit Graph):** [nammaroute-sigma.vercel.app](https://nammaroute-sigma.vercel.app/)
-- 🎆 **Diwali Sky (Fireworks Simulator):** [diwalisky.vercel.app](https://diwalisky.vercel.app)
-- ⚪ **Life in Dots (Lifespan in Weeks):** [lifeindots.vercel.app](https://lifeindots.vercel.app)
-- 🤖 **Catch the AI (Code Review & Debug Game):** [catchtheai.vercel.app](https://catchtheai.vercel.app/)
+This project is licensed under the [MIT License](LICENSE).
